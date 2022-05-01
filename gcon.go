@@ -65,7 +65,7 @@ func (p *Promise[V]) Wait() error {
 	return p.err
 }
 
-func Wait[V any](pList ...Promise[V]) error {
+func Wait[V any](pList ...*Promise[V]) error {
 	var wg sync.WaitGroup
 	wg.Add(len(pList))
 	errChan := make(chan error, len(pList))
