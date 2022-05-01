@@ -65,6 +65,7 @@ func (p *Promise[V]) Wait() error {
 	return p.err
 }
 
+// Wait wait for a group of same type promises to complete
 func Wait[V any](pList ...*Promise[V]) error {
 	var wg sync.WaitGroup
 	wg.Add(len(pList))
@@ -77,7 +78,7 @@ func Wait[V any](pList ...*Promise[V]) error {
 			if err != nil {
 				errChan <- err
 			}
-		}(p)
+		}(*p)
 	}
 	go func() {
 		defer close(done)
@@ -91,8 +92,8 @@ func Wait[V any](pList ...*Promise[V]) error {
 	return nil
 }
 
-// WaitAny takes in zero or more Waiter instances and paused until one returns an error or all of them complete successfully.
-// It returns the first error from a Waiter or nil, if no Waiter returns an error.
+// WaitAny takes in zero or more Waiter instances and paused until one returns an error or all of them complete
+// successfully. It returns the first error from a Waiter or nil, if no Waiter returns an error.
 func WaitAny(ws ...Waiter) error {
 	var wg sync.WaitGroup
 	wg.Add(len(ws))
@@ -119,7 +120,8 @@ func WaitAny(ws ...Waiter) error {
 	return nil
 }
 
-// WithCancellation takes in a Func and returns a Func that implements the passed-in Func's behavior, but adds context cancellation.
+// WithCancellation takes in a Func and returns a Func that implements the passed-in Func's behavior, but adds context
+// cancellation.
 func WithCancellation[T, V any](f Func[T, V]) Func[T, V] {
 	return func(ctx context.Context, t T) (V, error) {
 		done := make(chan struct{})
@@ -139,9 +141,9 @@ func WithCancellation[T, V any](f Func[T, V]) Func[T, V] {
 	}
 }
 
-// Then produces a Promise for the supplied Func, evaluating the supplied context.Context and Promise. The returned Promise is
-// returned immediately, no matter how long it takes for the Func to complete processing. If the supplied Promise returns a
-// non-nil error, the error is propagated to the returned Promise and the passed-in Func is not run.
+// Then produces a Promise for the supplied Func, evaluating the supplied context.Context and Promise. The returned
+// Promise is returned immediately, no matter how long it takes for the Func to complete processing. If the supplied
+// Promise returns a non-nil error, the error is propagated to the returned Promise and the passed-in Func is not run.
 func Then[T, V any](ctx context.Context, p *Promise[T], f Func[T, V]) *Promise[V] {
 	done := make(chan struct{})
 	out := Promise[V]{
