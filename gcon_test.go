@@ -98,7 +98,7 @@ func TestWait(t *testing.T) {
 	//everything finishes
 	p := Run(ctx, "100", fromString)
 	p2 := Run(ctx, 200, doubler)
-	err := Wait(p, p2)
+	err := WaitAny(p, p2)
 	if err != nil {
 		t.Error("expected no error, got ", err)
 	}
@@ -120,7 +120,7 @@ func TestWait(t *testing.T) {
 	// one errors out
 	p3 := Run(ctx, 2*time.Second, timed)
 	p4 := Run(ctx, 0, alwaysErr)
-	err = Wait(p3, p4)
+	err = WaitAny(p3, p4)
 	if !errors.Is(err, ErrFail) {
 		t.Error("expected ErrFail, got ", err)
 	}

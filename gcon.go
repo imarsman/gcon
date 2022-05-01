@@ -65,9 +65,35 @@ func (p *Promise[V]) Wait() error {
 	return p.err
 }
 
-// Wait takes in zero or more Waiter instances and paused until one returns an error or all of them complete successfully.
+func Wait[V any](pList ...Promise[V]) error {
+	var wg sync.WaitGroup
+	wg.Add(len(pList))
+	errChan := make(chan error, len(pList))
+	done := make(chan struct{})
+	for _, p := range pList {
+		go func(p Promise[V]) {
+			defer wg.Done()
+			err := p.Wait()
+			if err != nil {
+				errChan <- err
+			}
+		}(p)
+	}
+	go func() {
+		defer close(done)
+		wg.Wait()
+	}()
+	select {
+	case err := <-errChan:
+		return err
+	case <-done:
+	}
+	return nil
+}
+
+// WaitAny takes in zero or more Waiter instances and paused until one returns an error or all of them complete successfully.
 // It returns the first error from a Waiter or nil, if no Waiter returns an error.
-func Wait(ws ...Waiter) error {
+func WaitAny(ws ...Waiter) error {
 	var wg sync.WaitGroup
 	wg.Add(len(ws))
 	errChan := make(chan error, len(ws))
